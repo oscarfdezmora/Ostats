@@ -1,0 +1,38 @@
+
+
+
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">Add New User</h3>
+  </div>
+  <div class="panel-body">
+  </div>
+  <table class="table">
+    <tr><td></td><td witdh="50px"></td><td> Username</td><td> Email</td><td colspan="2"><center> Can </center></td></tr>
+    <% @data_users.each do |user| %>
+    <tr>
+      <td><a href='/admins/user_profile?id=<%=user["user_id"]%>'>View</a></td>
+      <td witdh="50px"><img height="50px" width="50px" src='<%= user["thumb"]%>'/></td>
+      <td> <%= user["username"]%><%= user["user_id"]%></td>
+      <td> <%= user["email"]%></td>
+      <% if @member_users[user["user_id"]] %>
+      <td> <center><a class="btn btn-success" href="users/set_access?user_id=<%= user["user_id"]%>&username=<%= user["username"]%>&email=<%= user["email"]%>&thumb=<%= user["thumb"]%>" role="button"> Access
+      </a></center></td>
+      <td>
+        <% if @member_users[user["user_id"]][:admin] %>
+        <center><a class="btn btn-primary" href="users/set_admin?user_id=<%= user["user_id"]%>" role="button"> Admin
+        </a></center>
+        <% else %>
+        <center><a class="btn btn-danger" href="users/set_admin?user_id=<%= user["user_id"]%>" role="button"> No admin
+        </a></center>
+        <% end %>
+      </td>
+      <% else %>
+      <td colspan="2"> <center><a class="btn btn-danger" href="users/set_access?user_id=<%= user["user_id"]%>&username=<%= user["username"]%>&email=<%= user["email"]%>&thumb=<%= user["thumb"]%>" role="button"> No access
+      </a></center>
+      </td>
+      <% end %>
+    </tr>
+      <% end %>
+  </table>
+</div>

@@ -1,0 +1,18 @@
+<div class="container">
+  <%= form_tag("/auth", method: "post", class: "form-signin") do %>
+    <h2 class="form-signin-heading">Please sign in</h2>
+    <% unless @result.nil? %>
+      <div>
+        <ul>
+          <li class="text-danger">Status: <%= @result["status"] %></li>
+          <li class="text-danger">Message: <%= @result["message"] %></li>
+        </ul>
+      </div>
+    <% end %>
+    <%= label_tag :username, "Username:", class: "sr-only" %>
+    <%= text_field_tag :username, "", class: "form-control", placeholder: "Username", required: true, autofocus: true %>
+    <%= label_tag :password, "Password:", :class => "sr-only" %>
+    <%= password_field_tag :password, "", class: "form-control", placeholder: "Password", required: true %>
+    <%= submit_tag "Sign in", class: "btn btn-lg btn-primary btn-block" %>
+  <% end %>
+</div>

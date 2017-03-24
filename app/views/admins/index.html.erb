@@ -1,0 +1,180 @@
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Server <%= @server_info["name"] %>Information</h3>
+      </div>
+      <div class="panel-body">
+          Host <%= @server_info["host"] %><br>
+          Port <%= @server_info["port"] %> <br>
+          Version <%= @server_info["version"] %><br>
+          <%= @count_online%> Users online
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-xs-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Activity</h3>
+      </div>
+      <div class="panel-body">
+        <div id="table_activity"></div>
+      </div>
+    </div>
+  </div>
+
+</div>
+<div class="row">
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Plays by day of week</h3>
+      </div>
+      <div class="panel-body">
+        <div id="dayofweek"></div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Plays by hour of day</h3>
+      </div>
+      <div class="panel-body">
+        <div id="hourofday"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title">Plays by Date</h3>
+      </div>
+      <div class="panel-body">
+        <div id="plays_by_date"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row">
+  <div class="col-md-12">
+    <div class="panel panel-default">
+      <div class="panel-heading">
+        <h3 class="panel-title"><center>GPS</center></h3>
+      </div>
+      <div class="panel-body">
+        <div id="regions_div" style="width: 900px; height: 500px;"></div>
+      </div>
+    </div>
+  </div>
+</div>
+<script>
+
+google.charts.load('current', {packages: ['corechart', 'bar','calendar','table','geochart']});
+ google.charts.setOnLoadCallback(bydate);
+google.charts.setOnLoadCallback(dayofweek);
+google.charts.setOnLoadCallback(hourofday);
+google.charts.setOnLoadCallback(drawTable);
+
+google.charts.setOnLoadCallback(drawRegionsMap);
+
+function dayofweek() {
+  var data = '<%=@get_plays_by_dayofweek%>'.replace(/&quot;/g,'"')
+  var data = google.visualization.arrayToDataTable(JSON.parse(data));
+
+  var options = {
+    legend: {position: 'bottom'}
+  };
+
+  var material = new google.charts.Bar(document.getElementById('dayofweek'));
+  material.draw(data, options);
+}
+function hourofday() {
+  var data = '<%=@get_plays_by_hourofday%>'.replace(/&quot;/g,'"')
+  var data = google.visualization.arrayToDataTable(JSON.parse(data));
+
+  var options = {
+    legend: {position: 'bottom'}
+  };
+
+  var material = new google.charts.Bar(document.getElementById('hourofday'));
+  material.draw(data, options);
+}
+function bydate(){
+  var data = JSON.parse('<%=@get_plays_by_date%>'.replace(/&quot;/g,'"'))
+  var rows = []
+  var dataTable = new google.visualization.DataTable();
+       dataTable.addColumn({ type: 'date', id: 'Date' });
+       dataTable.addColumn({ type: 'number', id: 'Plays' });
+       row=[]
+       for (i=0; i< data.length;i++){
+         row.push([new Date(data[i]["date"][0],data[i]["date"][1],data[i]["date"][2]),data[i]["count"]])
+       }
+       dataTable.addRows(row);
+
+       var chart = new google.visualization.Calendar(document.getElementById('plays_by_date'));
+
+       var options = {
+         title: "Plays by Date",
+         height: 350,
+       };
+       chart.draw(dataTable, options);
+}
+
+function drawTable() {
+      images_platform = {
+        "Android" : "http://icons.iconarchive.com/icons/carlosjj/google-jfk/128/android-icon.png",
+        "Chrome"  : "http://cdn.portableapps.com/GoogleChromePortable_256.png",
+        "Opera"   : "http://www.techspot.com/images2/downloads/topdownload/2014/05/opera.png",
+        "Linux"   : "https://dynamicimagesmx-v2b.netdna-ssl.com/product_class_external_product/linux.png",
+        "Playstation 4" : "http://vignette3.wikia.nocookie.net/clubpenguin/images/4/47/Playstation-logo-png.png/revision/latest?cb=20140517183555",
+        "Samsung" : "http://www.brycomm.com/wp-content/uploads/2011/08/Samsung-Logo.png"
+      }
+      json_data = JSON.parse('<%=@get_activity %>'.replace(/&quot;/g,'"'))["sessions"]
+        var data = new google.visualization.DataTable();
+        data.addColumn('string', 'Avatar');
+        data.addColumn('string', 'Platform');
+        data.addColumn('string', 'Player Name');
+        data.addColumn('string', 'IP');
+        data.addColumn('string', 'Image');
+        data.addColumn('string', 'Video');
+        data.addColumn('string', 'progress');
+        row = []
+        for (i=0; i< json_data.length;i++){
+          img = "https://avatars0.githubusercontent.com/u/16332011?v=3&s=88"
+          if (json_data[i]["platform"] in images_platform){
+            img = images_platform[json_data[i]["platform"]]
+          }
+          var icon_img ="<img height='50%' width='50%' src='http://178.63.89.75:8181/pms_image_proxy?img="+json_data[i]["grandparent_thumb"]+"&fallback=poster&X-Plex-Token=PJ8iyEqEm2o3pZSkh5fy'>"
+          var bar = '<div class="progress"><div class="progress-bar" role="progressbar" aria-valuenow="60" aria-valuemin="0" aria-valuemax="100" style="width: '+json_data[i]["progress_percent"]+'%;">'+json_data[i]["progress_percent"]+'%</div></div>'
+          row.push(["<center><img height='30px' width='30px' src='"+json_data[i]["user_thumb"]+"'/></center>","<center><img height='30px' width='30px' src='"+img+"'/></center>",json_data[i]["user"],json_data[i]["ip_address"],icon_img,json_data[i]["full_title"],bar])
+        }
+        data.addRows(row);
+
+        var table = new google.visualization.Table(document.getElementById('table_activity'));
+
+        table.draw(data, {allowHtml: true, showRowNumber: true, width: '100%', height: '100%'});
+      }
+
+
+      function drawRegionsMap() {
+        var json_data = JSON.parse('<%= @get_gps_cor %>'.replace(/&quot;/g,'"'))
+        data_json = [['Country', 'Popularity']]
+        $.each(json_data, function(k, v) {
+          data_json.push([k,v])
+        });
+
+        var data = google.visualization.arrayToDataTable(data_json);
+
+        var options = {};
+
+        var chart = new google.visualization.GeoChart(document.getElementById('regions_div'));
+
+        chart.draw(data, options);
+      }
+
+</script>
